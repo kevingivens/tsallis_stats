@@ -14,8 +14,8 @@ def q_log(q, x):
     assert(q < 3)
     return (1.0/(1.0-q))*(x**(1.0-q)-1.0)
 
-class q_qaussian_gen(rv_continuous):
-    r"""A q-Qaussian random variable.
+class q_gaussian_gen(rv_continuous):
+    r"""A q-Gaussian random variable.
 
     %(before_notes)s
     
