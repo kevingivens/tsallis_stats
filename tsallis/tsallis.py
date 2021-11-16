@@ -5,14 +5,7 @@ import scipy.special as sc
 from scipy.stats._distn_infrastructure import rv_continuous
 
 
-def q_exp(q, x):
-    assert(q < 3)
-    return np.where((1.0+(1.0-q)*x)**(1.0/(1.0-q)))
 
-def q_log(q, x):
-    assert(x > 0)
-    assert(q < 3)
-    return (1.0/(1.0-q))*(x**(1.0-q)-1.0)
 
 class q_gaussian_gen(rv_continuous):
     r"""A q-Gaussian random variable.
@@ -54,6 +47,54 @@ class q_gaussian_gen(rv_continuous):
 
     %(example)s
     """
+
+    @staticmethod
+    def q_exp(q, x):
+        assert(q < 3)
+        return np.where((1.0+(1.0-q)*x)**(1.0/(1.0-q)))
+
+    @staticmethod
+    def q_log(q, x):
+        assert(x > 0)
+        assert(q < 3)
+        return (1.0/(1.0-q))*(x**(1.0-q)-1.0)
+    
+    @staticmethod
+    def _get_m(q):
+        if q < 3:
+            result = 0
+        else:
+            result = np.nan
+        return result
+    
+    @staticmethod
+    def _get_v(q, beta):
+        if q < 5/3:
+            result = 1/(beta * (5-3*q))
+        elif q < 2:
+            result = np.inf
+        else:
+            result = np.nan
+        return result
+    
+    @staticmethod
+    def _get_s(q):
+        result = 0 
+        if q < 3/2:
+            result = 0
+        else:
+            result = np.nan
+        return result
+    
+    @staticmethod
+    def _get_k(q):
+        if q < 7/5:
+            result = 6*(q-1)/(7-5*q) 
+        else:
+            result = np.nan
+        return result
+
+    
     def _rvs(self, a, b, size=None, random_state=None):
         pass
 
@@ -67,17 +108,21 @@ class q_gaussian_gen(rv_continuous):
             c_q = 2.0*np.sqrt(np.pi)*sc.gamma(1.0/(1.0-q))
             c_q /= (3.0-q)*np.sqrt(1.0-q)*sc.gamma((3.0-q)/(2.0*(1.0-q)))
 
-        return np.sqrt(beta/c_q)*q_exp(-beta*x**2)
+        return np.sqrt(beta/c_q)*self.q_exp(-beta*x**2)
 
 
-    def _cdf(self, x, a, b):
+    def _cdf(self, x, q, beta):
         pass
 
-    def _ppf(self, q, a, b):
+    def _ppf(self, q, beta):
         pass
 
-    def _stats(self, a, b):
-        pass
+    def _stats(self, q, beta):
+        m = self._get_m(q)
+        v = self._get_v(q, beta)
+        s = self._get_s(q)
+        k = self._get_k(q)
+        return m, v, s, k
 
 
 q_gaussian = q_gaussian_gen(a=0.0, b=1.0, name='q_gaussian')
