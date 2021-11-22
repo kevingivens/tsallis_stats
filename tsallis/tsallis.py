@@ -48,21 +48,23 @@ class q_gaussian_gen(rv_continuous):
 
     @staticmethod
     def q_exp(q, x):
-        assert(q < 3)
+        # assert(q < 3)
         return np.where((1.0+(1.0-q)*x)**(1.0/(1.0-q)))
 
     @staticmethod
     def q_log(q, x):
-        assert(x > 0)
-        assert(q < 3)
+        # assert(x > 0)
+        # assert(q < 3)
         return (1.0/(1.0-q))*(x**(1.0-q)-1.0)
     
     @staticmethod
     def _get_m(q):
+        """ first moment """
         return np.where(q < 3, 0, np.nan)
     
     @staticmethod
     def _get_v(q, beta):
+        """ second moment """
         if q < 5/3:
             result = 1/(beta * (5-3*q))
         elif q < 2:
@@ -73,10 +75,12 @@ class q_gaussian_gen(rv_continuous):
     
     @staticmethod
     def _get_s(q):
+        """ third moment """
         return np.where(q < 3/2, 0, np.nan)
     
     @staticmethod
     def _get_k(q):
+        """ fourth moment """
         return np.where(q < 7/5, 6*(q-1)/(7-5*q), np.nan)
     
     def _argcheck(self, q, beta):
@@ -100,11 +104,11 @@ class q_gaussian_gen(rv_continuous):
         return np.sqrt(beta/c_q)*self.q_exp(-beta*x**2)
 
 
-    def _rvs(self, size=None, random_state=None):
+    def _rvs(self, q, beta, size=None, random_state=None):
         u1 = random_state.uniform(size=size)
         u2 = random_state.uniform(size=size)
-        z = np.sqrt(-2.0*self.q_log(u1)) * np.cos(2*np.pi * u2)
-        #return 1 - z / (np.sqrt(beta*(3-q)))
+        z = np.sqrt(-2.0*self.q_log(q, u1)) * np.cos(2*np.pi*u2)
+        return self._get_m(q) - self._get_v(q, beta)*z
     
     #def _cdf(self, x, q, beta):
     #    pass

@@ -12,6 +12,7 @@ if __name__ == "__main__":
     mean, var, skew, kurt = q_gaussian.stats(q, beta, moments='mvsk')
     
     print(mean, var, skew, kurt)
+    # print(q_gaussian.stats(q, beta, moments='m'))
     #fig, ax = plt.subplots(1, 1)
     #x = np.linspace(q_gaussian.ppf(0.01, q, beta), q_gaussian.ppf(0.99, q, beta), 100)
     #ax.plot(x, q_gaussian.pdf(x, q, beta, 'r-', lw=5, alpha=0.6, label='q_gaussian pdf'))
