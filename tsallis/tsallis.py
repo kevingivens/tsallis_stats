@@ -5,8 +5,6 @@ import scipy.special as sc
 from scipy.stats._distn_infrastructure import rv_continuous
 
 
-
-
 class q_gaussian_gen(rv_continuous):
     r"""A q-Gaussian random variable.
 
@@ -61,11 +59,7 @@ class q_gaussian_gen(rv_continuous):
     
     @staticmethod
     def _get_m(q):
-        if q < 3:
-            result = 0
-        else:
-            result = np.nan
-        return result
+        return np.where(q < 3, 0, np.nan)
     
     @staticmethod
     def _get_v(q, beta):
@@ -79,24 +73,19 @@ class q_gaussian_gen(rv_continuous):
     
     @staticmethod
     def _get_s(q):
-        result = 0 
-        if q < 3/2:
-            result = 0
-        else:
-            result = np.nan
-        return result
+        return np.where(q < 3/2, 0, np.nan)
     
     @staticmethod
     def _get_k(q):
-        if q < 7/5:
-            result = 6*(q-1)/(7-5*q) 
-        else:
-            result = np.nan
-        return result
-
+        return np.where(q < 7/5, 6*(q-1)/(7-5*q), np.nan)
     
-    def _rvs(self, a, b, size=None, random_state=None):
-        pass
+    def _argcheck(self, q, beta):
+        return (q < 3) & (beta > 0)
+
+    def _get_support(self, q, beta):
+        _b = np.where(q > 1, 1.0 / np.sqrt(beta*(1- q)), np.inf)
+        _a = np.where(q < 1, -1.0 / np.sqrt(beta*(1- q)), -np.inf)
+        return _a, _b
 
     def _pdf(self, x, q, beta):
         if q<0:
@@ -111,11 +100,17 @@ class q_gaussian_gen(rv_continuous):
         return np.sqrt(beta/c_q)*self.q_exp(-beta*x**2)
 
 
-    def _cdf(self, x, q, beta):
-        pass
+    def _rvs(self, size=None, random_state=None):
+        u1 = random_state.uniform(size=size)
+        u2 = random_state.uniform(size=size)
+        z = np.sqrt(-2.0*self.q_log(u1)) * np.cos(2*np.pi * u2)
+        #return 1 - z / (np.sqrt(beta*(3-q)))
+    
+    #def _cdf(self, x, q, beta):
+    #    pass
 
-    def _ppf(self, q, beta):
-        pass
+    #def _ppf(self, q, beta):
+    #    pass
 
     def _stats(self, q, beta):
         m = self._get_m(q)
@@ -125,4 +120,4 @@ class q_gaussian_gen(rv_continuous):
         return m, v, s, k
 
 
-q_gaussian = q_gaussian_gen(a=0.0, b=1.0, name='q_gaussian')
+q_gaussian = q_gaussian_gen(name='q_gaussian')
