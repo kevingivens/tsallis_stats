@@ -48,13 +48,13 @@ class q_gaussian_gen(rv_continuous):
 
     @staticmethod
     def q_exp(q, x):
-        # assert(q < 3)
+        assert(q < 3)
         return np.where((1.0+(1.0-q)*x)**(1.0/(1.0-q)))
 
     @staticmethod
     def q_log(q, x):
         # assert(x > 0)
-        # assert(q < 3)
+        assert(q < 3)
         return (1.0/(1.0-q))*(x**(1.0-q)-1.0)
     
     @staticmethod
@@ -107,8 +107,9 @@ class q_gaussian_gen(rv_continuous):
     def _rvs(self, q, beta, size=None, random_state=None):
         u1 = random_state.uniform(size=size)
         u2 = random_state.uniform(size=size)
-        z = np.sqrt(-2.0*self.q_log(q, u1)) * np.cos(2*np.pi*u2)
-        return self._get_m(q) - self._get_v(q, beta)*z
+        q_prime = (1 + q)/(3 - q)
+        z = np.sqrt(-2.0*self.q_log(q_prime, u1)) * np.cos(2*np.pi*u2)
+        return self._get_m(q) - z/(np.sqrt(beta*(3 - q)))
     
     #def _cdf(self, x, q, beta):
     #    pass
