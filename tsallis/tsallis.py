@@ -47,12 +47,12 @@ class q_gaussian_gen(rv_continuous):
     """
 
     @staticmethod
-    def q_exp(q, x):
+    def q_exp(x, q):
         assert(q < 3)
         return np.where((1.0+(1.0-q)*x)**(1.0/(1.0-q)))
 
     @staticmethod
-    def q_log(q, x):
+    def q_log(x, q):
         # assert(x > 0)
         assert(q < 3)
         return (1.0/(1.0-q))*(x**(1.0-q)-1.0)
@@ -87,29 +87,37 @@ class q_gaussian_gen(rv_continuous):
         return (q < 3) & (beta > 0)
 
     def _get_support(self, q, beta):
-        _b = np.where(q > 1, 1.0 / np.sqrt(beta*(1- q)), np.inf)
-        _a = np.where(q < 1, -1.0 / np.sqrt(beta*(1- q)), -np.inf)
+        # _a = np.where(q < 1, -1.0/np.sqrt(beta*(1-q)), -np.inf)
+        # _b = np.where(q < 1, 1.0/np.sqrt(beta*(1-q)), np.inf)
+        if q < 1:
+            _a = -1.0/np.sqrt(beta*(1-q))
+            _b = 1.0/np.sqrt(beta*(1-q))
+        else:
+            _a = -np.inf
+            _b = np.inf
         return _a, _b
 
     def _pdf(self, x, q, beta):
-        if q<0:
+        if q<1:
             c_q = 2.0*np.sqrt(np.pi)*sc.gamma(1.0/(1.0-q))
             c_q /= (3.0-q)*np.sqrt(1.0-q)*sc.gamma((3.0-q)/(2.0*(1.0-q)))
         elif q==1:
             c_q = np.sqrt(np.pi)
+        elif q < 3:
+            c_q = np.sqrt(np.pi)*sc.gamma((3.0-q)/(2.0*q-2.0))
+            c_q /= np.sqrt(q-1.0)*sc.gamma(1.0/(q-1.0))
         else:
-            c_q = 2.0*np.sqrt(np.pi)*sc.gamma(1.0/(1.0-q))
-            c_q /= (3.0-q)*np.sqrt(1.0-q)*sc.gamma((3.0-q)/(2.0*(1.0-q)))
+            c_q = np.nan
 
-        return np.sqrt(beta/c_q)*self.q_exp(-beta*x**2)
+        return np.sqrt(beta/c_q)*self.q_exp(-beta*x**2, q)
 
 
     def _rvs(self, q, beta, size=None, random_state=None):
         u1 = random_state.uniform(size=size)
         u2 = random_state.uniform(size=size)
         q_prime = (1 + q)/(3 - q)
-        z = np.sqrt(-2.0*self.q_log(q_prime, u1)) * np.cos(2*np.pi*u2)
-        return self._get_m(q) - z/(np.sqrt(beta*(3 - q)))
+        z = np.sqrt(-2.0*self.q_log(u1, q_prime)) * np.cos(2*np.pi*u2)
+        return self._get_m(q) + z/(np.sqrt(beta*(3 - q)))
     
     #def _cdf(self, x, q, beta):
     #    pass
