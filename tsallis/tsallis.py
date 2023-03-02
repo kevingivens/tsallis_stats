@@ -49,7 +49,12 @@ class q_gaussian_gen(rv_continuous):
     @staticmethod
     def q_exp(x, q):
         assert(q < 3)
-        return np.where((1.0+(1.0-q)*x)**(1.0/(1.0-q)))
+        if q == 1:
+            return np.exp(x)
+        elif 1.0+(1.0-q)*x > 0:
+            return (1.0+(1.0-q)*x)**(1.0/(1.0-q))
+        elif 1.0+(1.0-q)*x <= 0:
+            return 0.0
 
     @staticmethod
     def q_log(x, q):
