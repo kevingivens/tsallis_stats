@@ -1,8 +1,9 @@
 import numpy as np
-
+import numpy.typing as npt
 from scipy._lib.doccer import extend_notes_in_docstring
 import scipy.special as sc
-from scipy.stats._distn_infrastructure import rv_continuous
+from scipy.stats._distn_infrastructure import rv_continuous, _ShapeInfo
+from scipy._lib._util import _lazyselect, _lazywhere
 
 
 class q_gaussian_gen(rv_continuous):
@@ -47,8 +48,9 @@ class q_gaussian_gen(rv_continuous):
     """
 
     @staticmethod
-    def q_exp(x, q):
+    def q_exp(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
         assert(q < 3)
+        # lazyselect
         if q == 1:
             return np.exp(x)
         elif 1.0+(1.0-q)*x > 0:
@@ -57,58 +59,32 @@ class q_gaussian_gen(rv_continuous):
             return 0.0
 
     @staticmethod
-    def q_log(x, q):
-        # assert(x > 0)
+    def q_log(x: npt.ArrayLike, q) -> npt.ArrayLike:
         assert(q < 3)
-        return (1.0/(1.0-q))*(x**(1.0-q)-1.0)
+        return _lazywhere(q == 1, np.log(x), (x**(q-1.)-1.)/(1.-q))
     
-    @staticmethod
-    def _get_m(q):
-        """ first moment """
-        return np.where(q < 3, 0, np.nan)
+    def _shape_info(self):
+        iq = _ShapeInfo("q", False, (-np.inf, 3), (False, False))
+        ibeta = _ShapeInfo("beta", False, (0, np.inf), (False, False))
+        return [iq, ibeta]
     
-    @staticmethod
-    def _get_v(q, beta):
-        """ second moment """
-        if q < 5/3:
-            result = 1/(beta * (5-3*q))
-        elif q < 2:
-            result = np.inf
-        else:
-            result = np.nan
-        return result
-    
-    @staticmethod
-    def _get_s(q):
-        """ third moment """
-        return np.where(q < 3/2, 0, np.nan)
-    
-    @staticmethod
-    def _get_k(q):
-        """ fourth moment """
-        return np.where(q < 7/5, 6*(q-1)/(7-5*q), np.nan)
-    
-    def _argcheck(self, q, beta):
-        return (q < 3) & (beta > 0)
+    #def _argcheck(self, q: float, beta: float):
+    #    return (q < 3) & (beta > 0)
 
-    def _get_support(self, q, beta):
-        # _a = np.where(q < 1, -1.0/np.sqrt(beta*(1-q)), -np.inf)
-        # _b = np.where(q < 1, 1.0/np.sqrt(beta*(1-q)), np.inf)
-        if q < 1:
-            _a = -1.0/np.sqrt(beta*(1-q))
-            _b = 1.0/np.sqrt(beta*(1-q))
-        else:
-            _a = -np.inf
-            _b = np.inf
+    def _get_support(self, q: float, beta: float) -> tuple[float, float]:
+        _a = _lazywhere(q < 1, -1.0/np.sqrt(beta*(1-q)), -np.inf)
+        _b = _lazywhere(q < 1, 1.0/np.sqrt(beta*(1-q)), np.inf)
         return _a, _b
 
-    def _pdf(self, x, q, beta):
+    def _pdf(self, x, q: float, beta: float) -> npt.ArrayLike:
+        assert(q < 3)
+        # TODO: replace with lazyselect
         if q<1:
             c_q = 2.0*np.sqrt(np.pi)*sc.gamma(1.0/(1.0-q))
             c_q /= (3.0-q)*np.sqrt(1.0-q)*sc.gamma((3.0-q)/(2.0*(1.0-q)))
         elif q==1:
             c_q = np.sqrt(np.pi)
-        elif q < 3:
+        elif 1 < q < 3:
             c_q = np.sqrt(np.pi)*sc.gamma((3.0-q)/(2.0*q-2.0))
             c_q /= np.sqrt(q-1.0)*sc.gamma(1.0/(q-1.0))
         else:
@@ -117,12 +93,12 @@ class q_gaussian_gen(rv_continuous):
         return np.sqrt(beta/c_q)*self.q_exp(-beta*x**2, q)
 
 
-    def _rvs(self, q, beta, size=None, random_state=None):
+    def _rvs(self, q:float, beta:float, size=None, random_state=None):
         u1 = random_state.uniform(size=size)
         u2 = random_state.uniform(size=size)
         q_prime = (1 + q)/(3 - q)
         z = np.sqrt(-2.0*self.q_log(u1, q_prime)) * np.cos(2*np.pi*u2)
-        return self._get_m(q) + z/(np.sqrt(beta*(3 - q)))
+        return self._stats(q)[0] + z/(np.sqrt(beta*(3 - q)))
     
     #def _cdf(self, x, q, beta):
     #    pass
@@ -130,12 +106,24 @@ class q_gaussian_gen(rv_continuous):
     #def _ppf(self, q, beta):
     #    pass
 
-    def _stats(self, q, beta):
-        m = self._get_m(q)
-        v = self._get_v(q, beta)
-        s = self._get_s(q)
-        k = self._get_k(q)
-        return m, v, s, k
+    #def _logpdf(self, x, q, beta):
+    #    pass
+
+    def _stats(self, q: float, beta: float) -> tuple[float, float, float, float]:
+        
+        mu = _lazywhere(q < 3, 0, np.nan)
+  
+        # TODO replace with lazyselect
+        if q < 5/3:
+            mu2 = 1/(beta * (5-3*q))
+        elif q < 2:
+            mu2 = np.inf
+        else:
+            mu2 = np.nan
+
+        g1 = _lazywhere(q < 3/2, 0, np.nan)
+        g2 = _lazywhere(q < 7/5, 6*(q-1)/(7-5*q), np.nan)
+        return mu, mu2, g1, g2
 
 
 q_gaussian = q_gaussian_gen(name='q_gaussian')
