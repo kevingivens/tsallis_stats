@@ -8,3 +8,5 @@ __pycache__/
 
 # editor generated
 .vscode
+
+.pytest_cache/

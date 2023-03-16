@@ -3,7 +3,26 @@ import numpy.typing as npt
 from scipy._lib.doccer import extend_notes_in_docstring
 import scipy.special as sc
 from scipy.stats._distn_infrastructure import rv_continuous, _ShapeInfo
+# from scipy.stats._distn_infrastructure import rv_continuous
 from scipy._lib._util import _lazyselect, _lazywhere
+
+
+
+def q_exp(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
+    assert(q < 3)
+    # lazyselect
+    if q == 1:
+        return np.exp(x)
+    elif 1.0+(1.0-q)*x > 0:
+        return (1.0+(1.0-q)*x)**(1.0/(1.0-q))
+    elif 1.0+(1.0-q)*x <= 0:
+        return 0.0
+
+
+@staticmethod
+def q_log(x: npt.ArrayLike, q) -> npt.ArrayLike:
+    assert(q < 3)
+    return _lazywhere(q == 1, np.log(x), (x**(q-1.)-1.)/(1.-q))
 
 
 class q_gaussian_gen(rv_continuous):
@@ -45,23 +64,7 @@ class q_gaussian_gen(rv_continuous):
            53, 4805 (2007)
 
     %(example)s
-    """
-
-    @staticmethod
-    def q_exp(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
-        assert(q < 3)
-        # lazyselect
-        if q == 1:
-            return np.exp(x)
-        elif 1.0+(1.0-q)*x > 0:
-            return (1.0+(1.0-q)*x)**(1.0/(1.0-q))
-        elif 1.0+(1.0-q)*x <= 0:
-            return 0.0
-
-    @staticmethod
-    def q_log(x: npt.ArrayLike, q) -> npt.ArrayLike:
-        assert(q < 3)
-        return _lazywhere(q == 1, np.log(x), (x**(q-1.)-1.)/(1.-q))
+    """ 
     
     def _shape_info(self):
         iq = _ShapeInfo("q", False, (-np.inf, 3), (False, False))
@@ -90,14 +93,14 @@ class q_gaussian_gen(rv_continuous):
         else:
             c_q = np.nan
 
-        return np.sqrt(beta/c_q)*self.q_exp(-beta*x**2, q)
+        return np.sqrt(beta/c_q)*q_exp(-beta*x**2, q)
 
 
     def _rvs(self, q:float, beta:float, size=None, random_state=None):
         u1 = random_state.uniform(size=size)
         u2 = random_state.uniform(size=size)
         q_prime = (1 + q)/(3 - q)
-        z = np.sqrt(-2.0*self.q_log(u1, q_prime)) * np.cos(2*np.pi*u2)
+        z = np.sqrt(-2.0*q_log(u1, q_prime)) * np.cos(2*np.pi*u2)
         return self._stats(q)[0] + z/(np.sqrt(beta*(3 - q)))
     
     #def _cdf(self, x, q, beta):
