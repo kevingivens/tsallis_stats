@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "tsallis_stats"
+version = "0.1.0"
+description = "\"q-gaussian distribution for scipy\""
+authors = ["Kevin Givens <givenskevinm@gmail.com>"]
+license = "GPL"
+readme = "README.md"
+packages = [{include = "tsallis_stats"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+scipy = "^1.10.1"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+matplotlib = "^3.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

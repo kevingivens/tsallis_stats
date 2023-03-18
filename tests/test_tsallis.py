@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("..")
-
 import numpy as np
 import pytest
 from scipy import stats
@@ -10,7 +6,7 @@ from scipy.stats.tests.test_continuous_basic import (
     # cases_test_cont_basic
 )
 
-from tsallis.tsallis import q_gaussian
+from tsallis_stats.tsallis import q_gaussian
 
 # @pytest.mark.parametrize('distname,arg', cases_test_cont_basic())
 @pytest.mark.parametrize('distname,arg', [(q_gaussian, (1.2, 3))])

@@ -1,11 +1,7 @@
-import sys
-
 import matplotlib.pyplot as plt
 import numpy as np
 
-sys.path.append("..")
-
-from tsallis.tsallis import q_gaussian
+from tsallis_stats.tsallis import q_gaussian
 
 if __name__ == "__main__":
     q, beta = 1.2, 3
