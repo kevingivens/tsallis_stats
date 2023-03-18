@@ -11,11 +11,11 @@ from scipy._lib._util import _lazyselect, _lazywhere
 def q_exp(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
     r = _lazyselect(
         [q == 1,
-         (q != 0) & (1.0+(1.0-q)*x > 0),
-         (q != 0) & (1.0+(1.0-q)*x <= 0)],
-        [lambda x, q: np.exp(x),
-         lambda x, q: (1.0+(1.0-q)*x)**(1.0/(1.0-q)),
-         lambda x, q: 0.0
+         (q != 1) & (1.0+(1.0-q)*x > 0),
+         (q != 1) & (1.0+(1.0-q)*x <= 0)],
+        [lambda x_, q_: np.exp(x_),
+         lambda x_, q_: (1.0+(1.0-q_)*x_)**(1.0/(1.0-q_)),
+         lambda x_, q_: 0.0
          ],
         (x, q))
     return r
@@ -25,7 +25,7 @@ def q_log(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
     return _lazywhere(q == 1,
                       [x, q],
                       lambda x_, q_: np.log(x_), 
-                      f2 = lambda x_, q_: (x_**(q_-1.)-1.)/(1.-q_))
+                      f2 = lambda x_, q_: (x_**(1.-q_)-1.)/(1.-q_))
 
 
 class q_gaussian_gen(rv_continuous):
@@ -108,12 +108,11 @@ class q_gaussian_gen(rv_continuous):
 
         c_q = _lazyselect(
             conditions,
-            [c1, lambda q: np.sqrt(np.pi), c2],
-            [q], 
-            default = np.nan
+            [c1, lambda q_: np.sqrt(np.pi), c2],
+            [q],
         )
         
-        return np.sqrt(beta/c_q)*q_exp(-beta*x**2, q)
+        return (np.sqrt(beta)/c_q)*q_exp(-beta*x**2, q)
 
 
     def _rvs(self, q:float, beta:float, size=None, random_state=None):
@@ -137,13 +136,20 @@ class q_gaussian_gen(rv_continuous):
         # mu = _lazywhere(q < 3, 0, np.nan)
         mu = np.where(q < 3, 0, np.nan)
 
-        condlist = [q < 5/3, q < 2]
+        condlist = [
+            q < 5/3, 
+            (5/3 <= q) & (q < 2),
+            (2 <= q) & (q < 3),
+        ]
         
         mu2 = _lazyselect(
             condlist, 
-            [lambda q_, beta_: 1/(beta_ * (5-3*q_)), lambda q_, beta_: np.inf],
+            [
+                lambda q_, beta_: 1/(beta_ * (5-3*q_)), 
+                lambda q_, beta_: np.inf,
+                lambda q_, beta_: np.nan,
+            ],
             [q, beta],
-            default=np.nan
         )
         
         #if q < 5/3:
