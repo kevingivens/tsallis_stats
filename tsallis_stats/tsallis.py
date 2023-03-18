@@ -133,7 +133,7 @@ class q_gaussian_gen(rv_continuous):
 
     def _stats(self, q: float, beta: float) -> tuple[float, float, float, float]:
         
-        # mu = _lazywhere(q < 3, 0, np.nan)
+        # TODO: consider lazywhere
         mu = np.where(q < 3, 0, np.nan)
 
         condlist = [
@@ -152,16 +152,7 @@ class q_gaussian_gen(rv_continuous):
             [q, beta],
         )
         
-        #if q < 5/3:
-        #    mu2 = 1/(beta * (5-3*q))
-        #elif q < 2:
-        #    mu2 = np.inf
-        #else:
-        #    mu2 = np.nan
-
-        # g1 = _lazywhere(q < 3/2, 0, np.nan)
-        # g2 = _lazywhere(q < 7/5, 6*(q-1)/(7-5*q), np.nan)
-
+        # TODO: consider lazywhere
         g1 = np.where(q < 3/2, 0, np.nan)
         g2 = np.where(q < 7/5, 6*(q-1)/(7-5*q), np.nan)
         
