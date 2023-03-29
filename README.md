@@ -6,3 +6,5 @@ Scipy implementation of generalized q-Gaussian distribution from non-extensive s
 To be merged into scipy.stats
 
 See wiki [entry](https://en.wikipedia.org/wiki/Q-Gaussian_distribution) for more details
+
+![Q Gaussian pdfs](./demos/pdfs.png)
