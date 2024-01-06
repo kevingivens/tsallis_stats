@@ -3,9 +3,7 @@ import numpy.typing as npt
 from scipy._lib.doccer import extend_notes_in_docstring
 import scipy.special as sc
 from scipy.stats._distn_infrastructure import rv_continuous, _ShapeInfo
-# from scipy.stats._distn_infrastructure import rv_continuous
 from scipy._lib._util import _lazyselect, _lazywhere
-
 
 
 def q_exp(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
