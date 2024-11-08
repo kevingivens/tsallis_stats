@@ -1,13 +1,29 @@
 import numpy as np
 import numpy.typing as npt
 from scipy._lib.doccer import extend_notes_in_docstring
-import scipy.special as sc
-from scipy.stats._distn_infrastructure import rv_continuous, _ShapeInfo
 from scipy._lib._util import _lazyselect, _lazywhere
+from scipy.stats._distn_infrastructure import rv_continuous, _ShapeInfo
+import scipy.special as sc
+
 
 
 def q_exp(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
-    r = _lazyselect(
+    """ q exponential function (q generalization of an exponential function)
+
+    Parameters:
+    ----------
+        x : npt.ArrayLike
+            array_like
+        q : float
+            degree of non-extensivity
+
+    Returns:
+    --------
+        y : npt.ArrayLike 
+            The q logarithm of x, element-wise. This is a scalar if x is a scalar.
+
+    """
+    y = _lazyselect(
         [q == 1,
          (q != 1) & (1.0+(1.0-q)*x > 0),
          (q != 1) & (1.0+(1.0-q)*x <= 0)],
@@ -16,10 +32,25 @@ def q_exp(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
          lambda x_, q_: 0.0
          ],
         (x, q))
-    return r
+    return y
     
 
 def q_log(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
+    """q natural logarithm function (q generalization of an logarithm function)
+
+     Parameters:
+    ----------
+        x : npt.ArrayLike
+            array_like
+        q : float
+            degree of non-extensivity
+
+    Returns:
+    --------
+        y : npt.ArrayLike 
+            The q logarithm of x, element-wise. This is a scalar if x is a scalar.
+
+    """
     return _lazywhere(q == 1,
                       [x, q],
                       lambda x_, q_: np.log(x_), 
@@ -120,14 +151,6 @@ class q_gaussian_gen(rv_continuous):
         z = np.sqrt(-2.0*q_log(u1, q_prime)) * np.cos(2*np.pi*u2)
         return self._stats(q, beta)[0] + z/(np.sqrt(beta*(3 - q)))
     
-    #def _cdf(self, x, q, beta):
-    #    pass
-
-    #def _ppf(self, q, beta):
-    #    pass
-
-    #def _logpdf(self, x, q, beta):
-    #    pass
 
     def _stats(self, q: float, beta: float) -> tuple[float, float, float, float]:
         
