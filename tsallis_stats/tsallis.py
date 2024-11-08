@@ -21,6 +21,10 @@ def q_exp(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
     --------
         y : npt.ArrayLike 
             The q logarithm of x, element-wise. This is a scalar if x is a scalar.
+    
+    References
+    ----------
+    .. [1] https://en.wikipedia.org/wiki/Tsallis_statistics
 
     """
     y = _lazyselect(
@@ -38,7 +42,7 @@ def q_exp(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
 def q_log(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
     """q natural logarithm function (q generalization of an logarithm function)
 
-     Parameters:
+    Parameters:
     ----------
         x : npt.ArrayLike
             array_like
@@ -49,6 +53,10 @@ def q_log(x: npt.ArrayLike, q: float) -> npt.ArrayLike:
     --------
         y : npt.ArrayLike 
             The q logarithm of x, element-wise. This is a scalar if x is a scalar.
+
+    References
+    ----------
+    .. [1] https://en.wikipedia.org/wiki/Tsallis_statistics
 
     """
     return _lazywhere(q == 1,
